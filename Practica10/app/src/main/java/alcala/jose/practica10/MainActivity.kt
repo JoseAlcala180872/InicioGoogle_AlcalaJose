@@ -4,6 +4,7 @@ import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
 import android.os.Bundle
+import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.runtime.Composable
@@ -13,6 +14,9 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import kotlinx.coroutines.CoroutineScope
 import androidx.credentials.CredentialManager
+import androidx.credentials.GetCredentialRequest
+import androidx.credentials.exceptions.GetCredentialException
+import kotlinx.coroutines.launch
 
 class MainActivity : AppCompatActivity() {
     object Global{
@@ -60,10 +64,32 @@ class MainActivity : AppCompatActivity() {
             GetSignInWithGoogleOption.Builder(getString(R.string.web_client))
                 .setNonce("nonce")
                 .build()
+
+        val request: GetCredentialRequest = GetCredentialRequest.Builder()
+            .addCredentialOption(signInWithGoogleOption)
+            .build()
+
+        coroutineScope.launch {
+            try {
+                val result = credentialManager.getCredential(
+                    request = request,
+                    context = context
+                )
+                handleSignIn(result)
+            }catch (e: GetCredentialException){
+                Toast.makeText(
+                    aplicationContext,
+                    "Error al obtener la credencial "+e,
+                    Toast.LENGTH_LONG
+
+                ).show()
+            }
+
+        }
     }
 }
-class CredentialManager(){
+/*class CredentialManager(){
     fun createCredentialManager(context: Context):CredentialManager{
         return CredentialManager.create(context)
     }
-}
+}*/
